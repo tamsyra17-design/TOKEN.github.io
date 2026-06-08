@@ -1,0 +1,135 @@
+{
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "Hospital staff user profile containing access roles, status, and preferences",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique user ID matching Firebase Auth UID" },
+        "name": { "type": "string", "description": "Staff member full name" },
+        "email": { "type": "string", "description": "Staff member email address" },
+        "phone": { "type": "string", "description": "Staff member contact number" },
+        "role": { "type": "string", "enum": ["admin", "receptionist", "doctor"], "description": "Staff access level" },
+        "avatar": { "type": "string", "description": "URL or avatar image placeholder" },
+        "language": { "type": "string", "description": "Preferred interface language" },
+        "status": { "type": "string", "enum": ["active", "inactive"], "description": "User account status" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp when account was created" }
+      },
+      "required": ["uid", "name", "email", "role", "createdAt"]
+    },
+    "doctor": {
+      "title": "Doctor",
+      "description": "Doctor profile and their current live consultation status",
+      "type": "object",
+      "properties": {
+        "doctorId": { "type": "string", "description": "Unique identifier of the doctor" },
+        "doctorName": { "type": "string", "description": "Doctor full name" },
+        "speciality": { "type": "string", "description": "Specialty area e.g. Cardiology" },
+        "roomNumber": { "type": "string", "description": "Chamber/room number" },
+        "photo": { "type": "string", "description": "Doctor image URL or avatar" },
+        "activeStatus": { "type": "string", "enum": ["active", "inactive"], "description": "Whether doctor is actively accepting patients" },
+        "currentToken": { "type": "string", "description": "Current active token number being treated" },
+        "currentPatient": { "type": "string", "description": "Name of the current patient" },
+        "onlineStatus": { "type": "string", "enum": ["online", "offline"], "description": "Live chamber attendance" },
+        "chamberStartTime": { "type": "string", "description": "Chamber operating start time" },
+        "chamberEndTime": { "type": "string", "description": "Chamber operating end time" },
+        "averageConsultationTime": { "type": "number", "description": "Average minutes per patient consultation" },
+        "totalPatientsToday": { "type": "number", "description": "Total patients treated today" }
+      },
+      "required": ["doctorId", "doctorName", "speciality", "roomNumber"]
+    },
+    "token": {
+      "title": "Token",
+      "description": "Individual patient queuing token containing position and lifecycle status",
+      "type": "object",
+      "properties": {
+        "tokenId": { "type": "string", "description": "Unique token ID" },
+        "tokenNumber": { "type": "number", "description": "Auto-incrementing daily sequence number" },
+        "patientName": { "type": "string", "description": "Patient full name" },
+        "patientPhone": { "type": "string", "description": "Patient phone number for notifications" },
+        "doctorId": { "type": "string", "description": "ID of the assigned doctor" },
+        "doctorName": { "type": "string", "description": "Name of the assigned doctor" },
+        "queuePosition": { "type": "number", "description": "Active position in queue" },
+        "status": { "type": "string", "enum": ["waiting", "called", "completed", "skipped"], "description": "Current token lifecycle step" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Time the token was created" },
+        "calledAt": { "type": "string", "format": "date-time", "description": "Time the token was last called to chamber" },
+        "completedAt": { "type": "string", "format": "date-time", "description": "Time the token was marked completed" },
+        "skipped": { "type": "boolean", "description": "Whether the token was skipped" },
+        "priority": { "type": "string", "enum": ["normal", "emergency"], "description": "Emergency priority indicator" },
+        "language": { "type": "string", "description": "Language of the patient for announcement" }
+      },
+      "required": ["tokenId", "tokenNumber", "patientName", "doctorId", "status", "createdAt", "priority"]
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Hospital configurations and features enabling rules",
+      "type": "object",
+      "properties": {
+        "hospitalName": { "type": "string" },
+        "logo": { "type": "string" },
+        "tokenPrefix": { "type": "string" },
+        "tokenResetTime": { "type": "string" },
+        "languages": { "type": "array", "items": { "type": "string" } },
+        "voiceEnabled": { "type": "boolean" },
+        "whatsappEnabled": { "type": "boolean" },
+        "qrEnabled": { "type": "boolean" },
+        "displayTheme": { "type": "string" }
+      },
+      "required": ["hospitalName", "tokenPrefix"]
+    },
+    "reports": {
+      "title": "Report",
+      "description": "Daily queue analytics and timesheet metrics",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "totalPatients": { "type": "number" },
+        "averageWaitingTime": { "type": "number" },
+        "doctorWiseData": { "type": "object" },
+        "completedTokens": { "type": "number" },
+        "skippedTokens": { "type": "number" }
+      },
+      "required": ["date"]
+    },
+    "notifications": {
+      "title": "Notification",
+      "description": "System-wide notification log for alerts",
+      "type": "object",
+      "properties": {
+        "notificationId": { "type": "string" },
+        "title": { "type": "string" },
+        "body": { "type": "string" },
+        "userId": { "type": "string" },
+        "readStatus": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["notificationId", "title", "body", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "user",
+      "description": "Staff profile collection"
+    },
+    "/doctors/{doctorId}": {
+      "schema": "doctor",
+      "description": "Active doctors collection"
+    },
+    "/tokens/{tokenId}": {
+      "schema": "token",
+      "description": "Live queuing tokens collection"
+    },
+    "/settings/config": {
+      "schema": "settings",
+      "description": "Global hospital settings document"
+    },
+    "/reports/{reportId}": {
+      "schema": "reports",
+      "description": "Daily and periodic analytics reports"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "notifications",
+      "description": "Staff log notification alerts"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Hospital Token Management System",
+  "description": "An AI-powered real-time multi-doctor hospital queue and token routing system with voice announcements, live display, and scheduling.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

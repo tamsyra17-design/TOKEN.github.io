@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Safety Net Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Global Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Clean helpers to access data shapes
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Entity Specific Validators ---
+
+    function isValidUser(data, userId) {
+      return data.uid == userId &&
+             data.name is string &&
+             data.email is string;
+    }
+
+    function isValidDoctor(data, doctorId) {
+      return data.doctorId == doctorId &&
+             data.doctorName is string &&
+             data.roomNumber is string &&
+             data.speciality is string;
+    }
+
+    function isValidToken(data, tokenId) {
+      return data.tokenId == tokenId &&
+             data.patientName is string &&
+             data.doctorId is string &&
+             data.status in ['waiting', 'called', 'completed', 'skipped'] &&
+             data.priority in ['normal', 'emergency'];
+    }
+
+    function isValidSettings(data) {
+      return data.hospitalName is string &&
+             data.tokenPrefix is string;
+    }
+
+    function isValidReport(data) {
+      return data.date is string;
+    }
+
+    // --- Collection Routes ---
+
+    // 1. Users Collection
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+
+    // 2. Doctors Collection
+    match /doctors/{doctorId} {
+      allow read: if true;
+      allow write: if isValidDoctor(incoming(), doctorId);
+    }
+
+    // 3. Tokens Collection
+    match /tokens/{tokenId} {
+      allow read: if true;
+      allow write: if isValidToken(incoming(), tokenId);
+    }
+
+    // 4. Settings Config Documentation
+    match /settings/{document} {
+      allow read: if true;
+      allow write: if isValidSettings(incoming());
+    }
+
+    // 5. Reports Logging
+    match /reports/{reportId} {
+      allow read: if true;
+      allow write: if isValidReport(incoming());
+    }
+
+    // 6. Push Notifications Alerts
+    match /notifications/{notificationId} {
+      allow read, write: if true;
+    }
+  }
+}
